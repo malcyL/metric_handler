@@ -12,6 +12,18 @@ class VolatileHash
         @refresh = options[:refresh] or false
     end
 
+    def size
+        if @strategy == 'ttl'
+            @registry.each_pair do |k,v| 
+                if expired?(k)
+                    @cache.delete k
+                    @registry.delete k
+                end
+            end
+        end
+        @cache.size
+    end
+
     def [](key)
         value = @cache[key]
         if @strategy == 'ttl'

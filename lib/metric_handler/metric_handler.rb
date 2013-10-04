@@ -4,6 +4,7 @@ require 'eventmachine'
 require 'json'
 require "net/http"
 require "uri"
+require_relative './volatile_hash.rb'
 
 module MetricHandler
 
@@ -11,6 +12,9 @@ module MetricHandler
 
     def initialize
       @host, @port, @threadpool_size = "0.0.0.0", 9732, 100
+      @anon_cache = VolatileHash.new(:strategy => 'ttl', :ttl => 300)
+      @normal_cache = VolatileHash.new(:strategy => 'ttl', :ttl => 300)
+      @premium_cache = VolatileHash.new(:strategy => 'ttl', :ttl => 300)
     end
 
     def configure(host: "0.0.0.0", port: 9732, threadpool_size: 100)
@@ -47,16 +51,28 @@ module MetricHandler
                 user_id = payload["user_id"]
                 premium = payload["premium"]
 
+                if user_id == nil
+                  @anon_cache[session_id] = DateTime.now
+                end
+
+                if user_id != nil && !premium
+                  @normal_cache[session_id] = DateTime.now
+                end 
+
+                if premium
+                  @premium_cache[session_id] = DateTime.now
+                end 
+
+                #puts "#{@anon_cache.size} #{@normal_cache.size} #{@premium_cache.size}"
+
                 metrics = {
-                  anon: 0,
-                  normal: 0,
-                  premium: 0
+                  anon: @anon_cache.size,
+                  normal: @normal_cache.size,
+                  premium: @premium_cache.size
                }
 
                 post('/events', payload.to_json)
                 post('/metrics/traffic', metrics.to_json)
-
-                puts payload
 
                 sqs.delete_message(config['queue_url'], m['ReceiptHandle'])
               end
