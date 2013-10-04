@@ -1,6 +1,8 @@
 require 'socket'
 require 'fog'
 require 'eventmachine'
+require 'json'
+
 
 module MetricHandler
 
@@ -38,11 +40,19 @@ module MetricHandler
           else
             messages.each do |m|
               operation = proc do
+                response_body = JSON.parse(m['Body'])
+                payload = response_body["payload"]
+                session_id = payload["session_id"]
+                user_id = payload["user_id"]
+                premium = payload["premium"]
 
-                # Handle message
+                #body = m['Body']
+                #payload = m['Body.payload']
+                #puts response_body["payload"]
+                puts payload
 
                 sqs.delete_message(config['queue_url'], m['ReceiptHandle'])
-                puts m
+                #puts m
               end
               EM.defer(operation)
             end
