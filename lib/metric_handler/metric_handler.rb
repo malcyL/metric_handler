@@ -2,7 +2,8 @@ require 'socket'
 require 'fog'
 require 'eventmachine'
 require 'json'
-
+require "net/http"
+require "uri"
 
 module MetricHandler
 
@@ -46,13 +47,18 @@ module MetricHandler
                 user_id = payload["user_id"]
                 premium = payload["premium"]
 
-                #body = m['Body']
-                #payload = m['Body.payload']
-                #puts response_body["payload"]
+                metrics = {
+                  anon: 0,
+                  normal: 0,
+                  premium: 0
+               }
+
+                post('/events', payload.to_json)
+                post('/metrics/traffic', metrics.to_json)
+
                 puts payload
 
                 sqs.delete_message(config['queue_url'], m['ReceiptHandle'])
-                #puts m
               end
               EM.defer(operation)
             end
@@ -60,6 +66,17 @@ module MetricHandler
         end
       end
     end
+
+    def post(path, body)
+      http = Net::HTTP.new("dashboard.meducation.net")
+
+      response = http.post(path, body)
+      if response.code != '200'
+        puts path
+        puts response
+      end
+    end
+
   end
 end
 
