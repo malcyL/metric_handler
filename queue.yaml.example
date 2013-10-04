@@ -1,0 +1,4 @@
+access_key: <aws-access-key> 
+secret_key: <aws-secret-key>
+queue_url: <aws-sqs-url>
+queue_region: <aws-region>
