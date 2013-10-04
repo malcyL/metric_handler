@@ -84,9 +84,10 @@ module MetricHandler
     end
 
     def post(path, body)
-      http = Net::HTTP.new("dashboard.meducation.net")
+      http = Net::HTTP.new("dashboard.meducation.net", 80)
+      headers = {"Content-Type" => "application/json" }
+      response = http.post(path, body, headers)
 
-      response = http.post(path, body)
       if response.code != '200'
         puts path
         puts response
