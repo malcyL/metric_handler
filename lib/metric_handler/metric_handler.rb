@@ -40,7 +40,7 @@ module MetricHandler
         loop do
           response = sqs.receive_message(config['queue_url'])
           messages = response.body['Message']
-          if messages.empty? 
+          if messages.empty?
             sleep 2
           else
             messages.each do |m|
@@ -51,17 +51,20 @@ module MetricHandler
                 user_id = payload["user_id"]
                 premium = payload["premium"]
 
-                if user_id == nil
+                if user_id.nil?
                   @anon_cache[session_id] = DateTime.now
                 end
 
-                if user_id != nil && !premium
+                if !user_id.nil? && !premium
+                  @anon_cache[session_id] = nil
                   @normal_cache[session_id] = DateTime.now
-                end 
+                end
 
                 if premium
+                  @anon_cache[session_id] = nil
+                  @normal_cache[session_id] = nil
                   @premium_cache[session_id] = DateTime.now
-                end 
+                end
 
                 #puts "#{@anon_cache.size} #{@normal_cache.size} #{@premium_cache.size}"
 
@@ -96,5 +99,3 @@ module MetricHandler
 
   end
 end
-
-

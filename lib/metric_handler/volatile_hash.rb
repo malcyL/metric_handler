@@ -42,14 +42,19 @@ class VolatileHash
     end
 
     def []=(key, value)
-        if @strategy == 'ttl'
-            set_ttl(key)
-            @cache[key] = value
-        else
-            @item_order.unshift key
-            @cache[key] = value
-            lru_invalidate if @max_items < @item_order.length
-        end
+#        if value.nil?
+#            @cache.delete key
+#            @registry.delete key
+#        else
+            if @strategy == 'ttl'
+                set_ttl(key)
+                @cache[key] = value
+            else
+                @item_order.unshift key
+                @cache[key] = value
+                lru_invalidate if @max_items < @item_order.length
+            end
+#        end
     end
 
     private
@@ -58,7 +63,7 @@ class VolatileHash
     end
 
     def expired?(key)
-        Time.now > @registry[key]
+        @registry[key].nil? || Time.now > @registry[key]
     end
 
     def lru_invalidate
