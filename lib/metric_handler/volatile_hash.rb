@@ -42,10 +42,10 @@ class VolatileHash
     end
 
     def []=(key, value)
-#        if value.nil?
-#            @cache.delete key
-#            @registry.delete key
-#        else
+        if value.nil?
+            @cache.delete key
+            @registry.delete key
+        else
             if @strategy == 'ttl'
                 set_ttl(key)
                 @cache[key] = value
@@ -54,7 +54,7 @@ class VolatileHash
                 @cache[key] = value
                 lru_invalidate if @max_items < @item_order.length
             end
-#        end
+        end
     end
 
     private
