@@ -51,22 +51,27 @@ module MetricHandler
                 user_id = payload["user_id"]
                 premium = payload["premium"]
 
+                puts payload
+
                 if user_id.nil?
+                  puts "user_id is nil so adding session_id #{session_id} to anon cache"
                   @anon_cache[session_id] = DateTime.now
                 end
 
                 if !user_id.nil? && !premium
+                  puts "user_id is not nil so adding session_id #{session_id} to normal cache"
                   @anon_cache[session_id] = nil
                   @normal_cache[session_id] = DateTime.now
                 end
 
                 if premium
+                  puts "premium so adding session_id #{session_id} to premium cache"
                   @anon_cache[session_id] = nil
                   @normal_cache[session_id] = nil
                   @premium_cache[session_id] = DateTime.now
                 end
 
-                #puts "#{@anon_cache.size} #{@normal_cache.size} #{@premium_cache.size}"
+                puts "#{@anon_cache.size} #{@normal_cache.size} #{@premium_cache.size}"
 
                 metrics = {
                   anon: @anon_cache.size,
