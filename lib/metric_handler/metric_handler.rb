@@ -12,102 +12,103 @@ module MetricHandler
 
   class MetricHandler
 
+    def ensure_configured(config, key)
+      if config[key].nil? || config[key].empty?
+        raise "Configuration in config.yml should contain #{key}"
+      end
+      return config[key]
+    end
+
     def initialize
-      @threadpool_size = 100
-      @mongo_client = MongoClient.new("localhost", 27017, :pool_size => 5, :pool_timeout => 5)
-      db = @mongo_client.db("meducation_metrics")
-      db.collection("anon_users").create_index( { last_seen: 1 }, { expireAfterSeconds: 300 } )
-      db.collection("signedin_users").create_index( { last_seen: 1 }, { expireAfterSeconds: 300 } )
-      db.collection("premium_users").create_index( { last_seen: 1 }, { expireAfterSeconds: 300 } )
+      config = YAML.load_file("config.yml")
+      @threadpool_size = config.fetch('em_threadpool', 100)
+      @mongo_client = MongoClient.new(config.fetch('mongo_host', 'localhost'),
+                                      config.fetch('mongo_port', 27017),
+                                      :pool_size => 5, :pool_timeout => 5)
+      db = @mongo_client.db(config.fetch('mongo_metrics_db', 'meducation_metrics'))
+      inactive_user_timeout = config.fetch('inactive_user_timeout', 300)
+      db.collection("anon_users").create_index( { last_seen: 1 }, { expireAfterSeconds: inactive_user_timeout } )
+      db.collection("signedin_users").create_index( { last_seen: 1 }, { expireAfterSeconds: inactive_user_timeout } )
+      db.collection("premium_users").create_index( { last_seen: 1 }, { expireAfterSeconds: inactive_user_timeout } )
+      @dashboard_url = config['dashboard_url']
+      access_key = ensure_configured( config, 'access_key' )
+      secret_key = ensure_configured( config, 'secret_key' )
+      queue_region = ensure_configured( config, 'queue_region' )
+      @queue_url = ensure_configured( config, 'queue_url' )
+      @sqs = Fog::AWS::SQS.new(
+        :aws_access_key_id => access_key,
+        :aws_secret_access_key => secret_key,
+        :region => queue_region
+      )
     end
 
     def configure(threadpool_size: 100)
       @threadpool_size = threadpool_size
     end
 
+    def warmup_threads
+      EM.defer do
+        i = 0
+        i += 1
+      end
+    end
+
+    def uniquely_in_one(id, add, remove)
+      mongo_doc = { _id: id, last_seen: Time.now }
+      add.update( { "_id" => id }, mongo_doc, { upsert: true })
+      remove.each do |r|
+        r.remove({"_id" => id})
+      end
+    end
+
     def run
       EM.threadpool_size = @threadpool_size
       EM.run do
-        warmup_threads = proc do
-          i = 0
-          i += 1
-        end
-        EM.defer(warmup_threads)
-
-        config = YAML.load_file("queue.yaml")
-
-        sqs = Fog::AWS::SQS.new(
-         :aws_access_key_id => config['access_key'],
-         :aws_secret_access_key => config['secret_key'],
-         :region => config['queue_region']
-        )
+        warmup_threads
 
         loop do
-          response = sqs.receive_message(config['queue_url'])
+          response = @sqs.receive_message( @queue_url, options = { 'MaxNumberOfMessages' => 10 } )
           messages = response.body['Message']
           if messages.empty?
-            sleep 2
+            sleep 10
           else
             messages.each do |m|
-              operation = proc do
-                db = @mongo_client.db("meducation_metrics")
-                anon_users_collection = db.collection("anon_users")
-                signedin_users_collection = db.collection("signedin_users")
-                premium_users_collection = db.collection("premium_users")
-
-                response_body = JSON.parse(m['Body'])
-                payload = response_body["payload"]
-                session_id = payload["session_id"]
-                user_id = payload["user_id"]
-                premium = payload["premium"]
-
-                puts payload
-
-                mongo_doc = {
-                  _id: session_id,
-                  last_seen: Time.now
-                }
-
-                if user_id.nil?
-                  puts "user_id is nil so adding session_id #{session_id} to anon cache"
-                  anon_users_collection.update({"_id" => session_id}, mongo_doc, { upsert: true })
-                end
-
-                if !user_id.nil? && !premium
-                  puts "user_id is not nil so adding session_id #{session_id} to normal cache"
-                  anon_users_collection.remove({"_id" => session_id})
-                  signedin_users_collection.update({"_id" => session_id}, mongo_doc, { upsert: true })
-                end
-
-                if premium
-                  puts "premium so adding session_id #{session_id} to premium cache"
-                  anon_users_collection.remove({"_id" => session_id})
-                  signedin_users_collection.remove({"_id" => session_id})
-                  premium_users_collection.update({"_id" => session_id}, mongo_doc, { upsert: true })
-                end
-
-                anon_users_count = anon_users_collection.count
-                signedin_users_count = signedin_users_collection.count
-                premium_users_count = premium_users_collection.count
-
-                puts "#{anon_users_count} #{signedin_users_count} #{premium_users_count}"
-
-                metrics = {
-                  anon: anon_users_count,
-                  normal: signedin_users_count,
-                  premium: premium_users_count
-               }
-                dashboard_url = config['dashboard_url']
-                post('/events', payload.to_json, dashboard_url)
-                post('/metrics/traffic', metrics.to_json, dashboard_url)
-
-                sqs.delete_message(config['queue_url'], m['ReceiptHandle'])
-              end
-              EM.defer(operation)
+              process_message(m)
             end
           end
         end
       end
+    end
+
+    def process_message ( m )
+      operation = proc do
+        db = @mongo_client.db("meducation_metrics")
+        anon_users = db.collection("anon_users")
+        signedin_users = db.collection("signedin_users")
+        premium_users = db.collection("premium_users")
+
+        response_body = JSON.parse(m['Body'])
+        payload = response_body["payload"]
+        session_id = payload["session_id"]
+        user_id = payload["user_id"]
+        premium = payload["premium"]
+
+        if user_id.nil?
+          uniquely_in_one( session_id, anon_users, [signedin_users, premium_users] )
+        elsif !user_id.nil? && !premium
+          uniquely_in_one( session_id, signedin_users, [anon_users, premium_users] )
+        elsif premium
+          uniquely_in_one( session_id, premium_users, [anon_users, signedin_users] )
+        end
+
+        metrics = { anon: anon_users.count, normal: signedin_users.count, premium: premium_users.count }
+        puts metrics
+        post('/events', payload.to_json, @dashboard_url)
+        post('/metrics/traffic', metrics.to_json, @dashboard_url)
+
+        @sqs.delete_message(@queue_url, m['ReceiptHandle'])
+      end
+      EM.defer(operation)
     end
 
     def post(path, body, url)
