@@ -3,3 +3,8 @@ secret_key: <aws-secret-key>
 queue_url: <aws-sqs-url>
 queue_region: <aws-region>
 dashboard_url: <dashboard-url>
+em_threadpool: 100
+mongo_host: localhost
+mongo_port: 27017
+sleep_when_queue_empty: 30
+inactive_user_timeout: 300
