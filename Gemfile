@@ -4,3 +4,6 @@ ruby '2.0.0'
 gemspec
 
 gem 'coveralls', require: false
+gem 'mongo'
+gem 'bson'
+gem 'bson_ext'
