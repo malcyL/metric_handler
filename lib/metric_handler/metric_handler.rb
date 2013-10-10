@@ -22,7 +22,7 @@ module MetricHandler
     end
 
     def configure(threadpool_size: 100)
-      @threadpool_size = host, port, threadpool_size
+      @threadpool_size = threadpool_size
     end
 
     def run
@@ -97,7 +97,7 @@ module MetricHandler
                   normal: signedin_users_count,
                   premium: premium_users_count
                }
-                dashboard_url = config['dashboard-url']
+                dashboard_url = config['dashboard_url']
                 post('/events', payload.to_json, dashboard_url)
                 post('/metrics/traffic', metrics.to_json, dashboard_url)
 
