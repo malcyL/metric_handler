@@ -3,5 +3,4 @@
 require_relative "../lib/metric_handler/metric_handler.rb"
 
 metric_handler = MetricHandler::MetricHandler.new
-#metric_handler.configure(host:ARGV[0], port:ARGV[1])
 metric_handler.run
