@@ -48,23 +48,25 @@ module MetricHandler
   class MetricHandler
 
     def initialize
+      config
+
       @sqs = Fog::AWS::SQS.new(
-        :aws_access_key_id => config.access_key,
-        :aws_secret_access_key => config.secret_key,
-        :region => config.queue_region
+        :aws_access_key_id => @config.access_key,
+        :aws_secret_access_key => @config.secret_key,
+        :region => @config.queue_region
       )
 
-      @mongo_client = MongoClient.new(config.mongo_host, config.mongo_port,
+      @mongo_client = MongoClient.new(@config.mongo_host, @config.mongo_port,
                                       :pool_size => 5, :pool_timeout => 5)
 
-      db = @mongo_client.db(config.mongo_metrics_db)
-      db.collection("anon_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
-      db.collection("signedin_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
-      db.collection("premium_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
+      db = @mongo_client.db(@config.mongo_metrics_db)
+      db.collection("anon_users").create_index( { last_seen: 1 }, { expireAfterSeconds: @config.inactive_user_timeout } )
+      db.collection("signedin_users").create_index( { last_seen: 1 }, { expireAfterSeconds: @config.inactive_user_timeout } )
+      db.collection("premium_users").create_index( { last_seen: 1 }, { expireAfterSeconds: @config.inactive_user_timeout } )
     end
 
     def run
-      EM.threadpool_size = config.threadpool_size
+      EM.threadpool_size = @config.threadpool_size
       EM.run do
         warmup_threads
         loop { run_instance }
@@ -74,7 +76,7 @@ module MetricHandler
     private
 
     def run_instance
-      response = @sqs.receive_message( @queue_url, options = { 'MaxNumberOfMessages' => 10 } )
+      response = @sqs.receive_message( @config.queue_url, options = { 'MaxNumberOfMessages' => 10 } )
       messages = response.body['Message']
       if messages.empty?
         sleep 10
@@ -83,11 +85,11 @@ module MetricHandler
       end
     end
 
-    def process_message(messages)
+    def process_messages(messages)
       messages.each do |message|
         EM.defer do
-          MessageProcessor.process(message)
-          @sqs.delete_message(@queue_url, message['ReceiptHandle'])
+          MessageProcessor.process(message, @mongo_client)
+          @sqs.delete_message(@config.queue_url, message['ReceiptHandle'])
         end
       end
     end
@@ -106,12 +108,14 @@ module MetricHandler
 
   class MessageProcessor
 
-    def self.process(message)
-      new(message).process
+    def self.process(message, mongo_client)
+      new(message, mongo_client).process
     end
 
-    def initialize(message)
+    def initialize(message, mongo_client)
+      config
       @message = message
+      @mongo_client = mongo_client
     end
 
     def process
@@ -137,16 +141,21 @@ module MetricHandler
       metrics = { anon: anon_users.count, normal: signedin_users.count, premium: premium_users.count }
       puts metrics
 
-      MessagePoster.post('/events', payload.to_json, @dashboard_url)
-      MessagePoster.post('/metrics/traffic', metrics.to_json, @dashboard_url)
+      MessagePoster.post('/events', payload.to_json, @config.dashboard_url)
+      MessagePoster.post('/metrics/traffic', metrics.to_json, @config.dashboard_url)
     end
 
+    private
     def uniquely_in_one(id, add, remove)
       mongo_doc = { _id: id, last_seen: Time.now }
       add.update( { "_id" => id }, mongo_doc, { upsert: true })
       remove.each do |r|
         r.remove({"_id" => id})
       end
+    end
+
+    def config
+      @config ||= Configurator.instance
     end
   end
 
@@ -155,21 +164,21 @@ module MetricHandler
       new(path, body, url).post
     end
 
-    def self.initialize(path, body, url)
+    def initialize(path, body, url)
       @path = path
       @body = body
       @url  = url
     end
 
     def post
-      return if url.nil?
+      return if @url.nil?
 
-      http = Net::HTTP.new(url, 80)
+      http = Net::HTTP.new(@url, 80)
       headers = {"Content-Type" => "application/json" }
-      response = http.post(path, body, headers)
+      response = http.post(@path, @body, headers)
 
       if response.code != '200'
-        puts path
+        puts @path
         puts response
       end
     end
