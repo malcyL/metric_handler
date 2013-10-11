@@ -52,10 +52,10 @@ module MetricHandler
 
     def process_messages(messages)
       messages.each do |message|
-        #EM.defer do
+        EM.defer do
           MessageProcessor.process(message, @mongo_client)
           @sqs.delete_message(config.queue_url, message['ReceiptHandle'])
-        #end
+        end
       end
     end
 
