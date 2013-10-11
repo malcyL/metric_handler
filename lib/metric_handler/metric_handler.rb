@@ -37,7 +37,8 @@ module MetricHandler
       end
     end
 
-    private
+    # Removed private to make these methods testable
+    # private
 
     def run_instance
       response = @sqs.receive_message( config.queue_url, options = { 'MaxNumberOfMessages' => 10 } )
@@ -51,10 +52,10 @@ module MetricHandler
 
     def process_messages(messages)
       messages.each do |message|
-        EM.defer do
+        #EM.defer do
           MessageProcessor.process(message, @mongo_client)
           @sqs.delete_message(config.queue_url, message['ReceiptHandle'])
-        end
+        #end
       end
     end
 

@@ -5,12 +5,18 @@ module MetricHandler
   class Configuration
     include Singleton
 
+    @@config_filename = 'config.yml'
+
+    def self.config_filename= filename
+      @@config_filename = filename
+    end
+
     attr_accessor :threadpool_size, :dashboard_url, :inactive_user_timeout,
                   :access_key, :secret_key, :queue_region, :queue_url,
                   :mongo_host, :mongo_port, :mongo_metrics_db
 
     def initialize
-      config = YAML.load_file("config.yml")
+      config = YAML.load_file(@@config_filename)
 
       @threadpool_size = config.fetch('em_threadpool', 100)
       @dashboard_url = config['dashboard_url']

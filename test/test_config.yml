@@ -1,0 +1,10 @@
+access_key: test-aws-access-key
+secret_key: test-aws-secret-key
+queue_url: test-aws-sqs-url
+queue_region: test-aws-region
+dashboard_url: test-dashboard-url
+em_threadpool: 999
+mongo_host: mongohost
+mongo_port: 88888
+mongo_metrics_db: test-mongo-db
+inactive_user_timeout: 666
