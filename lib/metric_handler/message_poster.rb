@@ -1,5 +1,4 @@
 require 'net/http'
-require 'uri'
 
 module MetricHandler
   class MessagePoster

@@ -7,3 +7,4 @@ gem 'coveralls', require: false
 gem 'mongo'
 gem 'bson'
 gem 'bson_ext'
+gem 'mocha'
