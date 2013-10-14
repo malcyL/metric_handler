@@ -30,8 +30,10 @@ module MetricHandler
                                          "premium_users" => premium})
 
       expected_metrics = { anon: 1, normal: 0, premium: 0 }
+      SnsPublisher.expects(:publish).with(expected_metrics.to_json, "metrics-traffic")
       MessagePoster.expects(:post).with("/metrics/traffic", expected_metrics.to_json, "test-dashboard-url")
       expected_event = @anon_message["Body"]["payload"].to_json
+      SnsPublisher.expects(:publish).with(expected_event, "events")
       MessagePoster.expects(:post).with("/events", expected_event, "test-dashboard-url")
 
       processor = MessageProcessor.new({"Body" => @anon_message["Body"].to_json}, mongo_client)
@@ -50,8 +52,10 @@ module MetricHandler
                                          "premium_users" => premium})
 
       expected_metrics = { anon: 0, normal: 1, premium: 0 }
+      SnsPublisher.expects(:publish).with(expected_metrics.to_json, "metrics-traffic")
       MessagePoster.expects(:post).with("/metrics/traffic", expected_metrics.to_json, "test-dashboard-url")
       expected_event = @signedin_message["Body"]["payload"].to_json
+      SnsPublisher.expects(:publish).with(expected_event, "events")
       MessagePoster.expects(:post).with("/events", expected_event, "test-dashboard-url")
 
       processor = MessageProcessor.new({"Body" => @signedin_message["Body"].to_json}, mongo_client)
@@ -70,8 +74,10 @@ module MetricHandler
                                          "premium_users" => premium})
 
       expected_metrics = { anon: 0, normal: 0, premium: 1 }
+      SnsPublisher.expects(:publish).with(expected_metrics.to_json, "metrics-traffic")
       MessagePoster.expects(:post).with("/metrics/traffic", expected_metrics.to_json, "test-dashboard-url")
       expected_event = @premium_message["Body"]["payload"].to_json
+      SnsPublisher.expects(:publish).with(expected_event, "events")
       MessagePoster.expects(:post).with("/events", expected_event, "test-dashboard-url")
 
       processor = MessageProcessor.new({"Body" => @premium_message["Body"].to_json}, mongo_client)

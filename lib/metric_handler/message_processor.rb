@@ -42,6 +42,8 @@ module MetricHandler
 
       MessagePoster.post('/events', payload.to_json, config.dashboard_url)
       MessagePoster.post('/metrics/traffic', metrics.to_json, config.dashboard_url)
+      SnsPublisher.publish(payload.to_json, 'events')
+      SnsPublisher.publish(metrics.to_json, 'metrics-traffic')
     end
 
     private
