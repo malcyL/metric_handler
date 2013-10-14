@@ -27,6 +27,11 @@ module MetricHandler
       db.collection("anon_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
       db.collection("signedin_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
       db.collection("premium_users").create_index( { last_seen: 1 }, { expireAfterSeconds: config.inactive_user_timeout } )
+
+      db.collection("unique_loggedin_last_hour").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60) } )
+      db.collection("unique_loggedin_last_day").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24) } )
+      db.collection("unique_loggedin_last_week").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24 * 7) } )
+      db.collection("unique_loggedin_last_month").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24 * 30) } )
     end
 
     def run
