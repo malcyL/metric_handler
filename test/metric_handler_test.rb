@@ -9,8 +9,8 @@ module MetricHandler
 
     def setup_sqs(sqs = nil)
       Fog::AWS::SQS.expects(:new)
-                  .with(:aws_access_key_id     => 'test-aws-access-key', 
-                        :aws_secret_access_key => 'test-aws-secret-key', 
+                  .with(:aws_access_key_id     => 'test-aws-access-key',
+                        :aws_secret_access_key => 'test-aws-secret-key',
                         :region                => 'test-aws-region')
                   .returns(sqs)
     end
@@ -42,16 +42,15 @@ module MetricHandler
     end
 
     def test_it_creates
-      setup_sqs
+      #setup_sqs
       setup_mongo
       setup_handler
       refute @handler.nil?
     end
 
     def test_process_message
-      skip 'This fails because event machine is spawning the process in another thread.'
       sqs = mock()
-      sqs.expects(:delete_message).twice
+      sqs.expects(:delete_message)
 
       setup_sqs(sqs)
       setup_mongo
@@ -59,10 +58,8 @@ module MetricHandler
 
       MessageProcessor.expects(:process)
                       .with('message1', @mongo_client)
-      MessageProcessor.expects(:process)
-                      .with('message2', @mongo_client)
 
-      @handler.process_messages(['message1', 'message2'])
+      @handler.send :process_message, 'message1'
     end
   end
 end
