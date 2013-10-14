@@ -4,7 +4,7 @@ module MetricHandler
   class SnsPublisherTest < Minitest::Test
 
     def setup
-      Configuration.config_filename = 'test/test_config.yml'
+      MetricHandler.configure_from_file 'test/test_config.yml'
       @topic = "test_topic"
       @message = "test message"
       @arn = "test_arn"
