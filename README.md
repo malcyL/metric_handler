@@ -21,23 +21,23 @@ Or install it yourself as:
 
     $ gem install metric_handler
 
-## Running the Srever
+## Running the Server
 
 Firstly create a configuration file by copying config.yml.example to config.yml.
 
-<pre>
+```
 cp config.yml.example config.yml
-</pre>
+```
 
 The following example must be replaced with valid values in config.yml.
 
-<pre>
+```
 access_key: aws-access-key
 secret_key: aws-secret-key
 queue_url: aws-sqs-url
 queue_region: aws-region
 dashboard_url: dashboard-url
-</pre>
+```
 
 This configures metric handler to use your AWS account and tells it which 
 SQS queue to read messages from.
@@ -50,9 +50,9 @@ will be performed.
 
 Once configured, metric handler is run using the command:
 
-<pre>
+```
 ./bin/metric_handler
-</pre>
+```
 
 Now that metric_handler is listening for messages on an AWS SQS queue, you
 need to add messages to the queue. You can do this using udp2sqs_server and
@@ -63,9 +63,9 @@ This is done by copying is queue.yml.example file to queue.yml and
 entering the same AWS details as entered into metric_handlers config.yml
 file. Then run the udp2sqs_server using the command:
 
-<pre>
+```
 ./bin/udp2sqs localhost 9732
-</pre>
+```
 
 The udp2sqs server will now post messages to the AWS queue when it receives
 a UDP message on port 9732.
@@ -74,9 +74,9 @@ Use the udp2sqs_client project to send a UDP messages to the server. This
 requires no configuration, simply run the following command from the
 udp2sqs_client project.
 
-<pre>
+```
 ruby ./bin/send.rb 1234
-</pre>`
+```
 
 This will send a UDP message indicating a page view for a user with the
 session_id 1234. This message will be forwarded by the udp2sqs_server,
