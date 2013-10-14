@@ -3,9 +3,9 @@
 Receives metric events from an SQS queue and posts current metrics to a HTTP endpoint.
 
 [![Build Status](https://travis-ci.org/meducation/metric_handler.png)](https://travis-ci.org/meducation/metric_handler)
-[![Dependencies](https://gemnasium.com/meducation/udp2sqs-client.png?travis)](https://gemnasium.com/meducation/metric_handler)
-[![Code Climate](https://codeclimate.com/github/meducation/udp2sqs-client.png)](https://codeclimate.com/github/meducation/metric_handler)
-[![Coverage Status](https://coveralls.io/repos/meducation/udp2sqs-client/badge.png)](https://coveralls.io/r/meducation/metric_handler)
+[![Dependencies](https://gemnasium.com/meducation/metric_handler.png?travis)](https://gemnasium.com/meducation/metric_handler)
+[![Code Climate](https://codeclimate.com/github/meducation/metric_handler.png)](https://codeclimate.com/github/meducation/metric_handler)
+[![Coverage Status](https://coveralls.io/repos/meducation/metric_handler/badge.png)](https://coveralls.io/r/meducation/metric_handler)
 
 ## Installation
 
