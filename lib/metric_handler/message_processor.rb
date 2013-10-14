@@ -19,9 +19,19 @@ module MetricHandler
 
     def process
       db = @mongo_client.db("meducation_metrics")
+
       anon_users = db.collection("anon_users")
       signedin_users = db.collection("signedin_users")
       premium_users = db.collection("premium_users")
+
+      unique_loggedin_last_hour  = db.collection("unique_loggedin_last_hour")
+      unique_loggedin_last_day   = db.collection("unique_loggedin_last_day")
+      unique_loggedin_last_week  = db.collection("unique_loggedin_last_week")
+      unique_loggedin_last_month = db.collection("unique_loggedin_last_month")
+      unique_loggedin_collections = [ unique_loggedin_last_hour,
+                                      unique_loggedin_last_day,
+                                      unique_loggedin_last_week,
+                                      unique_loggedin_last_month ]
 
       response_body = JSON.parse(@message['Body'])
       payload = response_body["payload"]
@@ -37,7 +47,16 @@ module MetricHandler
         uniquely_in_one( session_id, premium_users, [anon_users, signedin_users] )
       end
 
-      metrics = { anon: anon_users.count, normal: signedin_users.count, premium: premium_users.count }
+      update_loggedin_user_collections(user_id, unique_loggedin_collections)
+
+      metrics = { anon: anon_users.count,
+                  normal: signedin_users.count,
+                  premium: premium_users.count,
+                  unique_loggedin_last_hour: unique_loggedin_last_hour.count,
+                  unique_loggedin_last_day: unique_loggedin_last_day.count,
+                  unique_loggedin_last_week: unique_loggedin_last_week.count,
+                  unique_loggedin_last_month: unique_loggedin_last_month.count
+                }
       puts metrics
 
       MessagePoster.post('/events', payload.to_json, config.dashboard_url)
@@ -45,6 +64,14 @@ module MetricHandler
     end
 
     private
+    def update_loggedin_user_collections(user_id, collections)
+      if !user_id.nil?
+        collections.each { |c| c.update( { "_id" => user_id },
+                                         { _id: user_id, last_seen: Time.now },
+                                         {upsert: true} ) }
+      end
+    end
+
     def uniquely_in_one(id, add, remove)
       mongo_doc = { _id: id, last_seen: Time.now }
       add.update( { "_id" => id }, mongo_doc, { upsert: true })
