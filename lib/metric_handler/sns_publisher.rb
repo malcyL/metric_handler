@@ -1,4 +1,3 @@
-require 'json'
 require 'net/http'
 
 module MetricHandler
@@ -22,7 +21,7 @@ module MetricHandler
       return if @topic.nil? || @message.nil?
 
       create_topic_result = @sns.create_topic(@topic)
-      body = JSON.parse(create_topic_result.body)
+      body = create_topic_result.body
       topic_arn = body['TopicArn']
 
       unless topic_arn.nil?
