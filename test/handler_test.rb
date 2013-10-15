@@ -1,16 +1,16 @@
 require_relative 'test_helper'
 
 module MetricHandler
-  class MetricHandlerTest < Minitest::Test
+  class HandlerTest < Minitest::Test
 
     def setup
-      Configuration.config_filename = 'test/test_config.yml'
+      MetricHandler.configure_from_file 'test/test_config.yml'
     end
 
     def setup_sqs(sqs = nil)
       Fog::AWS::SQS.expects(:new)
-                  .with(:aws_access_key_id     => 'test-aws-access-key', 
-                        :aws_secret_access_key => 'test-aws-secret-key', 
+                  .with(:aws_access_key_id     => 'test-aws-access-key',
+                        :aws_secret_access_key => 'test-aws-secret-key',
                         :region                => 'test-aws-region')
                   .returns(sqs)
     end
@@ -38,7 +38,7 @@ module MetricHandler
     end
 
     def setup_handler
-      @handler = MetricHandler.new()
+      @handler = Handler.new()
     end
 
     def test_it_creates

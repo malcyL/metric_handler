@@ -11,7 +11,7 @@ include Mongo
 
 module MetricHandler
 
-  class MetricHandler
+  class Handler
 
     def initialize
 
