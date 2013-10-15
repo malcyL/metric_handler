@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require_relative "../lib/metric_handler/metric_handler.rb"
+require_relative "../lib/metric_handler/handler.rb"
 
+MetricHandler::Configuration.instance.configure_from_file 'config.yml'
 metric_handler = MetricHandler::Handler.new
 metric_handler.run
