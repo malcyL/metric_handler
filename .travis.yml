@@ -3,5 +3,6 @@ rvm:
   - 2.0.0
 addons:
   code_climate:
-    repo_token: 9aa7cff8d696d56322567424303cebc22fc98260c623661a066338a3730a05d9
+    repo_token: d37e076ffc24bf7a4f7b9cc85b1e868c316d299aee3bec3de65345c6dcd9ce76
 script:
+  - rake
