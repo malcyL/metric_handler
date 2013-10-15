@@ -49,7 +49,7 @@ module MetricHandler
 
     def test_publish_to_sns_when_receive_arn
       create_topic_result = mock()
-      create_topic_result.expects(:body).returns({ :TopicArn => @arn}.to_json)
+      create_topic_result.expects(:body).returns({ "TopicArn" => @arn})
       sns = mock()
       sns.expects(:create_topic).with(@topic).returns(create_topic_result)
       sns.expects(:publish).with(@arn, @message)
