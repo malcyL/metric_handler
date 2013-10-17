@@ -14,7 +14,7 @@ module MetricHandler
     COMPULSORY_SETTINGS = [:access_key, :secret_key, :queue_region, :queue_url]
 
     attr_accessor *OPTIONAL_SETTINGS
-    attr_writer *OPTIONAL_SETTINGS
+    attr_writer *COMPULSORY_SETTINGS
 
     def initialize
       @threadpool_size = 100
