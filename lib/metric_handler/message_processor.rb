@@ -1,5 +1,6 @@
 require 'json'
 require 'mongo'
+require 'propono'
 require_relative 'configuration'
 
 include Mongo
@@ -58,8 +59,7 @@ module MetricHandler
     end
 
     def send_payload
-      MessagePoster.post('/events', @payload.to_json, config.dashboard_url)
-      SnsPublisher.publish(@payload.to_json, 'events')
+      Propono.publish("events", @payload.to_json)
     end
 
     def send_metrics
@@ -73,8 +73,7 @@ module MetricHandler
                 }
       puts metrics
 
-      MessagePoster.post('/metrics/traffic', metrics.to_json, config.dashboard_url)
-      SnsPublisher.publish(metrics.to_json, 'metrics-traffic')
+      Propono.publish("metrics-traffic", metrics.to_json)
     end
 
     def update_loggedin_user_collections
