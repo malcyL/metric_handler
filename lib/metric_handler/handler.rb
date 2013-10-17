@@ -23,6 +23,11 @@ module MetricHandler
       db.collection("unique_loggedin_last_day").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24) } )
       db.collection("unique_loggedin_last_week").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24 * 7) } )
       db.collection("unique_loggedin_last_month").create_index( { last_seen: 1 }, { expireAfterSeconds: (60 * 60 * 24 * 30) } )
+
+      Propono.config.access_key = config.access_key
+      Propono.config.secret_key = config.secret_key
+      Propono.config.queue_url = config.queue_url
+      Propono.config.queue_region = config.queue_region
     end
 
     def run
