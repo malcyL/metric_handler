@@ -8,10 +8,9 @@ module MetricHandler
   class Configuration
     include Singleton
 
-    OPTIONAL_SETTINGS = [:threadpool_size, :dashboard_url, :inactive_user_timeout,
-                         :mongo_host, :mongo_port, :mongo_metrics_db]
+    OPTIONAL_SETTINGS = [:inactive_user_timeout, :mongo_host, :mongo_port, :mongo_metrics_db]
 
-    COMPULSORY_SETTINGS = [:access_key, :secret_key, :queue_region, :queue_url]
+    COMPULSORY_SETTINGS = [:access_key, :secret_key, :queue_region, :application_name, :topic]
 
     attr_accessor *OPTIONAL_SETTINGS
     attr_writer *COMPULSORY_SETTINGS

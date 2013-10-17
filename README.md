@@ -34,9 +34,9 @@ The following example must be replaced with valid values in config.yml.
 ```
 access_key: aws-access-key
 secret_key: aws-secret-key
-queue_url: aws-sqs-url
 queue_region: aws-region
-dashboard_url: dashboard-url
+application_name: application-name
+topic: topic
 ```
 
 This configures metric handler to use your AWS account and tells it which 

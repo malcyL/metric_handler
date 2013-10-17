@@ -7,14 +7,6 @@ module MetricHandler
       MetricHandler.configure_from_file 'test/test_config.yml'
     end
 
-    def setup_sqs(sqs = nil)
-      Fog::AWS::SQS.expects(:new)
-                  .with(:aws_access_key_id     => 'test-aws-access-key',
-                        :aws_secret_access_key => 'test-aws-secret-key',
-                        :region                => 'test-aws-region')
-                  .returns(sqs)
-    end
-
     def setup_mongo
       anon     = mock(create_index: nil)
       signedin = mock(create_index: nil)
@@ -42,24 +34,20 @@ module MetricHandler
     end
 
     def test_it_creates
-      #setup_sqs
       setup_mongo
       setup_handler
-      refute @handler.nil?
+      assert @handler
     end
 
     def test_process_message
-      sqs = mock()
-      sqs.expects(:delete_message)
-
-      setup_sqs(sqs)
       setup_mongo
       setup_handler
 
       MessageProcessor.expects(:process)
                       .with('message1', @mongo_client)
 
-      @handler.send :process_message, 'message1'
+      Propono.expects(:listen_to_queue).yields("message1")
+      @handler.run
     end
   end
 end
