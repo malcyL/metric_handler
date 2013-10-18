@@ -6,8 +6,8 @@ require 'metric_handler/version'
 Gem::Specification.new do |spec|
   spec.name          = "metric_handler"
   spec.version       = MetricHandler::VERSION
-  spec.authors       = ["MalcyL, mmmmmrob"]
-  spec.email         = ["malcolm@landonsonline.me.uk, rob@dynamicorange.com"]
+  spec.authors       = ["MalcyL, mmmmmrob", "iHiD"]
+  spec.email         = ["malcolm@landonsonline.me.uk, rob@dynamicorange.com", "jeremy@meducation.net"]
   spec.description   = %q{Metric Event Handler}
   spec.summary       = %q{Receives metric events from an SQS queue and posts current metrics to a HTTP endpoint.}
   spec.homepage      = ""
@@ -20,7 +20,11 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "fog", "~> 1.15.0"
   spec.add_dependency "propono"
+  spec.add_dependency "mongo"
+  spec.add_dependency "bson"
+  spec.add_dependency "bson_ext"
 
+  spec.add_development_dependency "mocha"
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "minitest", "~> 5.0"

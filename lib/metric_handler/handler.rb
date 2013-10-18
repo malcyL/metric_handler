@@ -3,8 +3,6 @@ require 'fog'
 require 'mongo'
 require_relative 'configuration'
 require_relative 'message_processor'
-require_relative 'message_poster'
-require_relative 'sns_publisher'
 
 include Mongo
 

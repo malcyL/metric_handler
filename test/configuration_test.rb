@@ -31,6 +31,12 @@ module MetricHandler
       assert_equal 666, config.inactive_user_timeout
     end
 
+    def test_access_key_is_writable
+      val = "Foobar"
+      config.access_key = val
+      assert_equal val, config.access_key
+    end
+
     def test_missing_access_key_throws_exception
       assert_raises(ConfigurationError) do
         config.access_key
