@@ -1,8 +1,8 @@
 access_key: <aws-access-key>
 secret_key: <aws-secret-key>
-queue_url: <aws-sqs-url>
 queue_region: <aws-region>
-dashboard_url: <dashboard-url>
+application_name: <application-name>
+topic: <topic>
 em_threadpool: 100
 mongo_host: localhost
 mongo_port: 27017

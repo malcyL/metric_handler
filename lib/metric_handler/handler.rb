@@ -24,47 +24,20 @@ module MetricHandler
 
       Propono.config.access_key = config.access_key
       Propono.config.secret_key = config.secret_key
-      Propono.config.queue_url = config.queue_url
       Propono.config.queue_region = config.queue_region
+      Propono.config.application_name = config.application_name
     end
 
     def run
-      loop { run_instance }
+      Propono.listen_to_queue(config.topic) do |message|
+        MessageProcessor.process(message, mongo_client)
+      end
     end
 
     private
 
-    def run_instance
-      response = sqs.receive_message( config.queue_url, options = { 'MaxNumberOfMessages' => 10 } )
-      messages = response.body['Message']
-      if messages.empty?
-        sleep 10
-      else
-        process_messages(messages)
-      end
-    end
-
-    def process_messages(messages)
-      messages.each do |message|
-        Thread.new { process_message(message) }
-      end
-    end
-
-    def process_message(message)
-      MessageProcessor.process(message, mongo_client)
-      sqs.delete_message(config.queue_url, message['ReceiptHandle'])
-    end
-
     def config
       @config ||= Configuration.instance
-    end
-
-    def sqs
-      @sqs ||= Fog::AWS::SQS.new(
-        :aws_access_key_id => config.access_key,
-        :aws_secret_access_key => config.secret_key,
-        :region => config.queue_region
-      )
     end
 
     def mongo_client

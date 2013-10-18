@@ -6,7 +6,6 @@ module MetricHandler
   class MessageProcessorTest < Minitest::Test
 
     def setup
-      MetricHandler.config.dashboard_url = "test-dashboard-url"
       @anon_message = { "Body" => { "payload" => { "session_id" => "1", "user_id" => nil, "premium" => false } } }
       @signedin_message = { "Body" => { "payload" => { "session_id" => "1", "user_id" => "33", "premium" => false } } }
       @premium_message = { "Body" => { "payload" => { "session_id" => "1", "user_id" => "33", "premium" => true } } }

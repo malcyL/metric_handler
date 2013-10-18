@@ -21,10 +21,9 @@ module MetricHandler
       config.configure_from_file 'test/test_config.yml'
       assert_equal 'test-aws-access-key', config.access_key
       assert_equal 'test-aws-secret-key', config.secret_key
-      assert_equal 'test-aws-sqs-url', config.queue_url
+      assert_equal 'test-application-name', config.application_name
       assert_equal 'test-aws-region', config.queue_region
-      assert_equal 'test-dashboard-url', config.dashboard_url
-      assert_equal 999, config.threadpool_size
+      assert_equal 'test-topic', config.topic
       assert_equal 'mongohost', config.mongo_host
       assert_equal 88888, config.mongo_port
       assert_equal 'test-mongo-db', config.mongo_metrics_db
@@ -55,9 +54,15 @@ module MetricHandler
       end
     end
 
-    def test_missing_queue_url_throws_exception
+    def test_missing_application_name_throws_exception
       assert_raises(ConfigurationError) do
-        config.queue_url
+        config.application_name
+      end
+    end
+
+    def test_missing_topic_throws_exception
+      assert_raises(ConfigurationError) do
+        config.topic
       end
     end
   end
