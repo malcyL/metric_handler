@@ -1,5 +1,4 @@
 require 'socket'
-require 'fog'
 require 'mongo'
 require_relative 'configuration'
 require_relative 'message_processor'
@@ -29,7 +28,9 @@ module MetricHandler
     end
 
     def run
+      puts "Subscribing to topic #{config.topic}"
       Propono.listen_to_queue(config.topic) do |message|
+        puts "Received message: #{message}"
         MessageProcessor.process(message, mongo_client)
       end
     end
