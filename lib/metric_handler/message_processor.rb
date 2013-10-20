@@ -40,7 +40,7 @@ module MetricHandler
     end
 
     def extract_payload
-      response_body = JSON.parse(@message['Body'])
+      response_body = JSON.parse(@message)
       @payload = response_body["payload"]
       @session_id = @payload["session_id"]
       @user_id = @payload["user_id"]

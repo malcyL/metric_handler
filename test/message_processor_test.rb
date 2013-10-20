@@ -44,7 +44,7 @@ module MetricHandler
       expected_event = @anon_message["Body"]["payload"].to_json
       Propono.expects(:publish).with("events", expected_event)
 
-      processor = MessageProcessor.new({"Body" => @anon_message["Body"].to_json}, mongo_client)
+      processor = MessageProcessor.new(@anon_message["Body"].to_json, mongo_client)
       processor.process
     end
 
@@ -73,7 +73,7 @@ module MetricHandler
       expected_event = @signedin_message["Body"]["payload"].to_json
       Propono.expects(:publish).with("events", expected_event)
 
-      processor = MessageProcessor.new({"Body" => @signedin_message["Body"].to_json}, mongo_client)
+      processor = MessageProcessor.new(@signedin_message["Body"].to_json, mongo_client)
       processor.process
     end
 
@@ -102,7 +102,7 @@ module MetricHandler
       expected_event = @premium_message["Body"]["payload"].to_json
       Propono.expects(:publish).with("events", expected_event)
 
-      processor = MessageProcessor.new({"Body" => @premium_message["Body"].to_json}, mongo_client)
+      processor = MessageProcessor.new(@premium_message["Body"].to_json, mongo_client)
       processor.process
     end
 
